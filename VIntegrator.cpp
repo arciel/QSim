@@ -1,10 +1,17 @@
-// verlet_integrator.cpp : Defines the entry point for the console application.
+// VIntegrator.cpp : Defines the entry point for the console application.
 
 #include <stdio.h>
 #include <tchar.h>
 #include "VParticle.h"
 
-// Bug: Breaks if + and - charges entered at the exact same place.
+/* Bug: 
+ *		1. Breaks if + and - charges entered at the exact same place.
+ *		2. Asymmetry observed (charge 1 gets attracted but 2 does not).
+ *
+ * To-do: 
+ *		1. Fix bugs (if any)
+ *		2. Change List from an array to a vector<VParticle>.
+ */
 
 double time, delta;         // Current time and dt (step size).
 int npart;				    // Number of particles
@@ -13,7 +20,7 @@ float nx_q;				    // Charge and ...
 int nx_s;				    // ... sign of next particle to be added.
 int fixed;			        // Whether or not the charge is fixed in place.
 
-VParticle List[128];        // 128 particles max. TODO : Replace with vector<Particle>
+VParticle List[128];        // 128 particles max (for now).
 
 // Physics functions
 void vector_euler();
