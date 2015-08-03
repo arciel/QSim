@@ -6,7 +6,7 @@
 
 // Bug: Breaks if + and - charges entered at the exact same place.
 
-class vParticle
+class VParticle
 {
 public:
 	int id;		            // Unique ID
@@ -31,7 +31,7 @@ float nx_q;				    // Charge and ...
 int nx_s;				    // ... sign of next particle to be added.
 int fixed;			        // Whether or not the charge is fixed in place.
 
-vParticle List[128];        // 128 particles max. TODO : Replace with vector<Particle>
+VParticle List[128];        // 128 particles max. TODO : Replace with vector<Particle>
 
 // Physics functions
 void vector_euler();
@@ -130,7 +130,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		//Loop over and draw the points
 
 		SDL_Rect pos;
-		vParticle *p = nullptr;
+		VParticle *p = nullptr;
 
 		for (int i = 0; i < npart; i++)
 		{
@@ -151,7 +151,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 void vector_euler()	 // EXPLICIT EULER INTEGRATIONS
 {
-	vParticle *vp = nullptr;
+	VParticle *vp = nullptr;
 
 	for (int i = 0; i < npart; i++)
 	{
@@ -178,7 +178,7 @@ void vector_euler()	 // EXPLICIT EULER INTEGRATIONS
 
 void verlet_integrate()
 {
-	vParticle *vp = nullptr;
+	VParticle *vp = nullptr;
 	for (int i = 0; i < npart; i++)					// For each particle in the simulation..
 	{
 		vp = &List[i];
