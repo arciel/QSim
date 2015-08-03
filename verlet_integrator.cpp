@@ -1,9 +1,9 @@
 // verlet_integrator.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
 #include <stdio.h>
 #include <SDL.h>
+#include <tchar.h>
 
 class vec2d
 {
