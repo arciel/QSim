@@ -4,32 +4,34 @@
 #include <tchar.h>
 #include "Vector2D.h"
 
+// Bug: Breaks if + and - charges entered at the exact same place.
+
 class vParticle
 {
 public:
-	int id;		        // Unique ID
-	float q;	        // Charge, signed
-	int fixed;	        // is the charge fixed in place? = 0 no.
+	int id;		            // Unique ID
+	float q;	            // Charge, signed
+	int fixed;	            // is the charge fixed in place? = 0 no.
 
-	Vector2D r;	        // Position vector at current time
+	Vector2D r;	            // Position vector at current time
 	Vector2D r_;	        // Position vector at t-1 for verlet int
 	
-	Vector2D r_t;          // Stores new calculated position temporarily
+	Vector2D r_t;           // Stores new calculated position temporarily
 
-	Vector2D v;	        // Velocity vector
+	Vector2D v;	            // Velocity vector
 	Vector2D v_;	        // Updated velocity
 	
-	Vector2D f;	        // Force vector
+	Vector2D f;	            // Force vector
 };
 
-double time, delta;     // Current time and dt (step size).
-int npart;				// Number of particles
+double time, delta;         // Current time and dt (step size).
+int npart;				    // Number of particles
 
-float nx_q;				// Charge and ...
-int nx_s;				// ... sign of next particle to be added.
-int fixed;			    // Whether or not the charge is fixed in place.
+float nx_q;				    // Charge and ...
+int nx_s;				    // ... sign of next particle to be added.
+int fixed;			        // Whether or not the charge is fixed in place.
 
-vParticle List[128];    // 128 particles max. TODO : Replace with vector<Particle>
+vParticle List[128];        // 128 particles max. TODO : Replace with vector<Particle>
 
 // Physics functions
 void vector_euler();
@@ -90,10 +92,10 @@ int _tmain(int argc, _TCHAR* argv[])
 				{
 					printf("Add charge +%fq at %d %d\n", nx_q, e.button.x, e.button.y);
 					List[npart].id = npart;
-					List[npart].r.x = e.button.x;
-					List[npart].r.y = e.button.y;
-					List[npart].r_.x = e.button.x;
-					List[npart].r_.y = e.button.y;
+					List[npart].r.setX(e.button.x);
+					List[npart].r.setY(e.button.y);
+					List[npart].r_.setX(e.button.x);
+					List[npart].r_.setY(e.button.y);
 					List[npart].q = nx_q;
 					List[npart].fixed = fixed;					// TODO
 					npart++;
@@ -102,10 +104,10 @@ int _tmain(int argc, _TCHAR* argv[])
 				{
 					printf("Add charge -%fq at %d %d\n", nx_q, e.button.x, e.button.y);
 					List[npart].id = npart;
-					List[npart].r.x = e.button.x;
-					List[npart].r.y = e.button.y;
-					List[npart].r_.x = e.button.x;
-					List[npart].r_.y = e.button.y;
+					List[npart].r.setX(e.button.x);
+					List[npart].r.setY(e.button.y);
+					List[npart].r_.setX(e.button.x);
+					List[npart].r_.setY(e.button.y);
 					List[npart].q = -nx_q;
 					List[npart].fixed = fixed;
 					//TODO
