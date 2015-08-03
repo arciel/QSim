@@ -70,8 +70,6 @@ int _tmain(int argc, _TCHAR* argv[])
 	printf("Current Renderer = %s\n", inf.name);
 	printf("Current Video Driver = %s\n", SDL_GetCurrentVideoDriver());
 
-
-
 	while (!quit)
 	{
 		//GUI Handling
@@ -79,7 +77,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT) quit = true;
-			
+
 			if (e.type == SDL_MOUSEWHEEL)						// Mouse wheel controls charge magnitude. 
 			{
 				nx_q += e.wheel.y;
@@ -116,12 +114,10 @@ int _tmain(int argc, _TCHAR* argv[])
 				else if (e.button.button == SDL_BUTTON_MIDDLE) // Middle-click toggles fixed masses
 				{
 					fixed = 1 - fixed;
-					printf("Fixed status is now %d\n",fixed);
-					
+					printf("Fixed status is now %d\n", fixed);
 				}
 			}
 		}
-
 		//Physics calculations
 
 		verlet_integrate(); //Superior
@@ -139,14 +135,13 @@ int _tmain(int argc, _TCHAR* argv[])
 		for (int i = 0; i < npart; i++)
 		{
 			p = &List[i];
-			pos = { p->r[0] - 1 * SDL_abs(p->q), p->r[1] - 1 * SDL_abs(p->q), 2*SDL_abs(p->q), 2*SDL_abs(p->q) };
-			p->q > 0 ? SDL_SetRenderDrawColor(r,255, 0, 0, SDL_ALPHA_OPAQUE) : SDL_SetRenderDrawColor(r,0, 0, 255, SDL_ALPHA_OPAQUE);
+			pos = { p->r[0] - 1 * SDL_abs(p->q), p->r[1] - 1 * SDL_abs(p->q), 2 * SDL_abs(p->q), 2 * SDL_abs(p->q) };
+			p->q > 0 ? SDL_SetRenderDrawColor(r, 255, 0, 0, SDL_ALPHA_OPAQUE) : SDL_SetRenderDrawColor(r, 0, 0, 255, SDL_ALPHA_OPAQUE);
 			SDL_RenderFillRect(r, &pos);
 		} //^^Depending on the charge's magnitude and polarity, render a box centered at the x,y coordinates
-		
+
 		SDL_RenderPresent(r);			// Render to the screen
 	}
-
 	SDL_DestroyRenderer(r);				// Clean up allocated SDL resources
 	SDL_DestroyWindow(w);
 	SDL_Quit();
@@ -161,7 +156,6 @@ void vector_euler()	 // EXPLICIT EULER INTEGRATIONS
 	for (int i = 0; i < npart; i++)
 	{
 		vp = &List[i];
-
 		Vector2D netE(0,0);
 
 		for (int j = 0; j < npart; j++)
@@ -169,7 +163,6 @@ void vector_euler()	 // EXPLICIT EULER INTEGRATIONS
 			if (vp->id == List[j].id) continue;
 			netE = netE + (vp->r - List[j].r) * (List[j].q / vp->r.distance2(List[j].r));
 		}
-
 		vp->f = netE * vp->q;
 		vp->v = vp->v + vp->f*(float)delta;
 		vp->r_ = vp->r + vp->v*(float)delta;
@@ -186,7 +179,6 @@ void vector_euler()	 // EXPLICIT EULER INTEGRATIONS
 void verlet_integrate()
 {
 	vParticle *vp = nullptr;
-
 	for (int i = 0; i < npart; i++)					// For each particle in the simulation..
 	{
 		vp = &List[i];
