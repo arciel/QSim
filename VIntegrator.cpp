@@ -92,7 +92,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		VParticle *p = nullptr;
 		for (int i = 0; i < List.size(); i++)
 		{   
-			if (List[i] != nullptr) {
+			if (List[i] != nullptr) 
+			{
 				p = List[i];
 				pos = { p->getR()[0] - 1 * SDL_abs(p->getQ()), p->getR()[1] - 1 * SDL_abs(p->getQ()), 2 * SDL_abs(p->getQ()), 2 * SDL_abs(p->getQ()) };
 				(p->getQ() > 0) ? SDL_SetRenderDrawColor(r, 255, 0, 0, SDL_ALPHA_OPAQUE) : SDL_SetRenderDrawColor(r, 0, 0, 255, SDL_ALPHA_OPAQUE);
@@ -112,12 +113,15 @@ void verlet_integrate()
 	VParticle *vp = nullptr;
 	for (int i = 0; i < List.size(); i++)							// For each particle in the simulation..
 	{
-		if (List[i] != nullptr) {
+		if (List[i] != nullptr) 
+		{
 			vp = List[i];
 			if (vp->getFixed() == 1) continue;
 			Vector2D netE(0, 0);
-			for (int j = 0; j < List.size(); j++) { 				// Calculate the net E field at the particle coords.
-				if (List[j] != nullptr) {
+			for (int j = 0; j < List.size(); j++)					// Calculate the net E field at the particle coords.
+			{ 				
+				if (List[j] != nullptr) 
+				{
 					if (vp->getID() == List[j]->getID()) continue;	// Do not include ourselves in the calculation for net E-field.
 					netE = netE + (vp->getR() - List[j]->getR()) * (List[j]->getQ() / vp->getR().distance2(List[j]->getR()));
 				}
@@ -127,7 +131,8 @@ void verlet_integrate()
 
 			vp->setR_t((vp->getR()) * 2 - vp->getR_() + vp->getF()*((float)delta*(float)delta / SDL_abs(vp->getQ())));
 
-			if (vp->getR_t().squaredDistance(screenCentre) >= cutOffDistance*cutOffDistance) {
+			if (vp->getR_t().squaredDistance(screenCentre) >= cutOffDistance*cutOffDistance)
+			{
 				delete List[i];
 				List[i] = nullptr;
 			}
@@ -135,10 +140,12 @@ void verlet_integrate()
 	}
 	for (int i = 0; i < List.size(); i++)
 	{
-		if (List[i] != nullptr) {
+		if (List[i] != nullptr)
+		{
 			vp = List[i];
 			if (vp->getFixed() == 1) {}
-			else {
+			else 
+			{
 				vp->setR_(vp->getR());
 				vp->setR(vp->getR_t());
 			}
