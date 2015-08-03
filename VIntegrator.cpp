@@ -71,25 +71,13 @@ int _tmain(int argc, _TCHAR* argv[])
 				if (e.button.button == SDL_BUTTON_LEFT)			// Left click, add a new +ve particle to the sim.
 				{
 					printf("Add charge +%fq at %d %d\n", nx_q, e.button.x, e.button.y);
-					List[npart].id = npart;
-					List[npart].r.setX(e.button.x);
-					List[npart].r.setY(e.button.y);
-					List[npart].r_.setX(e.button.x);
-					List[npart].r_.setY(e.button.y);
-					List[npart].q = nx_q;
-					List[npart].fixed = fixed;					// TODO
+					List[npart] = *(new VParticle(npart, e.button.x, e.button.y, e.button.x, e.button.y, nx_q, fixed));
 					npart++;
 				}
 				else if (e.button.button == SDL_BUTTON_RIGHT)   // Right click, add -ve particle to the sim.
 				{
 					printf("Add charge -%fq at %d %d\n", nx_q, e.button.x, e.button.y);
-					List[npart].id = npart;
-					List[npart].r.setX(e.button.x);
-					List[npart].r.setY(e.button.y);
-					List[npart].r_.setX(e.button.x);
-					List[npart].r_.setY(e.button.y);
-					List[npart].q = -nx_q;
-					List[npart].fixed = fixed;
+					List[npart] = *(new VParticle(npart, e.button.x, e.button.y, e.button.x, e.button.y, -nx_q, fixed));
 					//TODO
 					npart++;
 				}
@@ -117,8 +105,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		for (int i = 0; i < npart; i++)
 		{
 			p = &List[i];
-			pos = { p->r[0] - 1 * SDL_abs(p->q), p->r[1] - 1 * SDL_abs(p->q), 2 * SDL_abs(p->q), 2 * SDL_abs(p->q) };
-			p->q > 0 ? SDL_SetRenderDrawColor(r, 255, 0, 0, SDL_ALPHA_OPAQUE) : SDL_SetRenderDrawColor(r, 0, 0, 255, SDL_ALPHA_OPAQUE);
+			pos = { p->getR()[0] - 1 * SDL_abs(p->getQ()), p->getR()[1] - 1 * SDL_abs(p->getQ()), 2 * SDL_abs(p->getQ()), 2 * SDL_abs(p->getQ()) };
+			(p->getQ() > 0) ? SDL_SetRenderDrawColor(r, 255, 0, 0, SDL_ALPHA_OPAQUE) : SDL_SetRenderDrawColor(r, 0, 0, 255, SDL_ALPHA_OPAQUE);
 			SDL_RenderFillRect(r, &pos);
 		} //^^Depending on the charge's magnitude and polarity, render a box centered at the x,y coordinates
 
@@ -142,19 +130,19 @@ void vector_euler()	 // EXPLICIT EULER INTEGRATIONS
 
 		for (int j = 0; j < npart; j++)
 		{
-			if (vp->id == List[j].id) continue;
-			netE = netE + (vp->r - List[j].r) * (List[j].q / vp->r.distance2(List[j].r));
+			if (vp->getID() == List[j].getID()) continue;
+			netE = netE + (vp->getR() - List[j].getR()) * (List[j].getQ() / vp->getR().distance2(List[j].getR()));
 		}
-		vp->f = netE * vp->q;
-		vp->v = vp->v + vp->f*(float)delta;
-		vp->r_ = vp->r + vp->v*(float)delta;
+		vp->setF(netE * vp->getQ());
+		vp->setV(vp->getV() + vp->getF()*(float)delta);
+		vp->setR_(vp->getR() + vp->getV()*(float)delta);
 		
 	}
 	//update positions
 	for (int i = 0; i < npart; i++)
 	{
 		vp = &List[i];
-		vp->r = vp->r_;
+		vp->setR(vp->getR_());
 	}
 }
 
@@ -165,27 +153,27 @@ void verlet_integrate()
 	{
 		vp = &List[i];
 
-		if (vp->fixed == 1)continue;
+		if (vp->getFixed() == 1)continue;
 
 		Vector2D netE(0, 0);
 
 		for (int j = 0; j < npart; j++)				// Calculate the net E field at the particle coords
 		{
-			if (vp->id == List[j].id) continue;		// Do not include ourselves in the calculation for net E-field
+			if (vp->getID() == List[j].getID()) continue;		// Do not include ourselves in the calculation for net E-field
 			
-			netE = netE + (vp->r - List[j].r) * (List[j].q / vp->r.distance2(List[j].r));
+			netE = netE + (vp->getR() - List[j].getR()) * (List[j].getQ() / vp->getR().distance2(List[j].getR()));
 		}
-		vp->f = netE * vp->q; //The net force on the particle, F=qE (Doesn't this lool completely non-intimidating?)
+		vp->setF(netE * vp->getQ()); //The net force on the particle, F=qE (Doesn't this lool completely non-intimidating?)
 		//Here, the accn = force as mass = 1 and gravitational effects are not considered.
 		//actually on further consideration, let mass = abs(q) makes for more interesting sims.
-		vp->r_t = (vp->r) * 2 - vp->r_ + vp->f*((float)delta*(float)delta / SDL_abs(vp->q));
+		vp->setR_t((vp->getR()) * 2 - vp->getR_() + vp->getF()*((float)delta*(float)delta / SDL_abs(vp->getQ())));
 	}
 	//Updates
 	for (int i = 0; i < npart; i++)
 	{
 		vp = &List[i];
-		if (vp->fixed == 1)continue;
-		vp->r_ = vp->r;
-		vp->r = vp->r_t;
+		if (vp->getFixed() == 1)continue;
+		vp->setR_(vp->getR());
+		vp->setR(vp->getR_t());
 	}
 }
