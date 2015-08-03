@@ -1,81 +1,8 @@
 // verlet_integrator.cpp : Defines the entry point for the console application.
 
 #include <stdio.h>
-#include <SDL.h>
 #include <tchar.h>
-
-class vec2d
-{
-public:
-	float x, y;
-	vec2d()
-	{
-		x = 0, y = 0;
-	}
-	vec2d(float x, float y)
-	{
-		this->x = x;
-		this->y = y;
-	}
-	float operator[](int a)					// SUBSCRIPT access
-	{
-		if (a == 0)return this->x;
-		else if (a == 1)return this->y;
-		else return -1;
-	}
-	float operator*(vec2d &b)			    // DOT multiplication
-	{
-		return this->x*b[0] + this->y * b[1];
-	}
-	vec2d operator*(float c)                // SCALAR multiplication
-	{
-		vec2d r;
-		r.x = c*this->x;
-		r.y = c*this->y;
-		return r;
-	}
-	vec2d operator*(int c)                  // SCALAR multiplication
-	{
-		vec2d r;
-		r.x = c*this->x;
-		r.y = c*this->y;
-		return r;
-	}
-	void operator=(vec2d &b)
-	{
-		this->x = b.x;
-		this->y = b.y;
-	}
-	vec2d operator+(vec2d &b)
-	{
-		vec2d r;
-		r.x = this->x + b.x;
-		r.y = this->y + b.y;
-		return r;
-	}
-
-	vec2d operator-(vec2d &b)
-	{
-		vec2d r;
-		r.x = this->x - b.x;
-		r.y = this->y - b.y;
-		return r;
-	}
-	float norm()
-	{
-		return SDL_pow(SDL_pow(this->x, 2) + SDL_pow(this->y, 2), 1 / 2);
-	}
-	float distance(vec2d &b)
-	{
-		float r = ((this->x - b.x)*(this->x - b.x)) + ((this->y - b.y)*(this->y - b.y) );
-		return SDL_pow(r, 0.5);
-	}
-	float distance2(vec2d &b)
-	{
-		float r = ((this->x - b.x)*(this->x - b.x)) + ((this->y - b.y)*(this->y - b.y));
-		return r;
-	}
-};
+#include "Vector2D.h"
 
 class vParticle
 {
@@ -84,15 +11,15 @@ public:
 	float q;	        // Charge, signed
 	int fixed;	        // is the charge fixed in place? = 0 no.
 
-	vec2d r;	        // Position vector at current time
-	vec2d r_;	        // Position vector at t-1 for verlet int
+	Vector2D r;	        // Position vector at current time
+	Vector2D r_;	        // Position vector at t-1 for verlet int
 	
-	vec2d r_t;          // Stores new calculated position temporarily
+	Vector2D r_t;          // Stores new calculated position temporarily
 
-	vec2d v;	        // Velocity vector
-	vec2d v_;	        // Updated velocity
+	Vector2D v;	        // Velocity vector
+	Vector2D v_;	        // Updated velocity
 	
-	vec2d f;	        // Force vector
+	Vector2D f;	        // Force vector
 };
 
 double time, delta;     // Current time and dt (step size).
@@ -233,7 +160,7 @@ void vector_euler()	 // EXPLICIT EULER INTEGRATIONS
 	{
 		vp = &List[i];
 
-		vec2d netE(0,0);
+		Vector2D netE(0,0);
 
 		for (int j = 0; j < npart; j++)
 		{
@@ -264,7 +191,7 @@ void verlet_integrate()
 
 		if (vp->fixed == 1)continue;
 
-		vec2d netE(0, 0);
+		Vector2D netE(0, 0);
 
 		for (int j = 0; j < npart; j++)				// Calculate the net E field at the particle coords
 		{
