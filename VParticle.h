@@ -9,7 +9,7 @@ class VParticle
 	float q;	            // Charge, signed
 	int fixed;	            // is the charge fixed in place? = 0 no.
 	Vector2D r;	            // Position vector at current time
-	Vector2D r_;	        // Position vector at t-1 for verlet_int
+	Vector2D r_;	        // Position vector at t-1 for verlet_integrate()
 	Vector2D r_t;           // Stores new calculated position temporarily
 	Vector2D v;	            // Velocity vector
 	Vector2D v_;	        // Updated velocity
@@ -24,6 +24,14 @@ public:
 		this->r_.setX(x_); this->r_.setY(y_);
 		this->q = charge;
 		this->fixed = fixed;
+	}
+	VParticle(int id, float charge, Vector2D _r, Vector2D _v) //I am ashamed.
+	{
+		this->id = id;
+		this->q = charge;
+		this->r = _r;
+		this->v = _v;
+		
 	}
 	int getID() 
 	{

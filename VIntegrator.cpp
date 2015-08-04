@@ -2,6 +2,8 @@
 
 #define _CRT_ARGUMENT_NO_WARNINGS
 
+#include "stdafx.h"
+
 #include <stdio.h>
 #include <tchar.h>
 #include <iostream>
@@ -27,6 +29,7 @@ Vector2D screenCentre(400, 300);
 std::vector<VParticle *> List;        
 
 void verlet_integrate();
+void rk4_integrate();
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -85,7 +88,8 @@ int _tmain(int argc, _TCHAR* argv[])
 				}
 			}
 		}
-		verlet_integrate();											// Physics calculations.
+		//verlet_integrate();											// Physics calculations.
+		rk4_integrate();
 		SDL_SetRenderDrawColor(r, 255, 255, 255, SDL_ALPHA_OPAQUE); // Clear screen to white color.
 		SDL_RenderClear(r);
 		SDL_Rect pos;
@@ -129,13 +133,13 @@ void verlet_integrate()
 			vp->setF(netE * vp->getQ()); //The net force on the particle, F=qE (Doesn't this lool completely non-intimidating?).
 			// Here, the accn = force as mass = 1 and gravitational effects are not considered.
 
-			vp->setR_t((vp->getR()) * 2 - vp->getR_() + vp->getF()*((float)delta*(float)delta / SDL_abs(vp->getQ())));
-
+			vp->setR_t((vp->getR()) * 2 - vp->getR_() + vp->getF()*((float)delta*(float)delta / SDL_abs(1/*vp->getQ()*/)));
+			/*
 			if (vp->getR_t().squaredDistance(screenCentre) >= cutOffDistance*cutOffDistance)
 			{
 				delete List[i];
 				List[i] = nullptr;
-			}
+			}*/
 		}
 	}
 	for (int i = 0; i < List.size(); i++)
@@ -151,4 +155,91 @@ void verlet_integrate()
 			}
 		}
 	}
+}
+
+//Quick and Dirty RK4 implementation.
+//Followed GoG's blog, Wikipedia, CodeFlow and Doswa.
+//TODO : Refactor, refactor and refactor!
+// Eventually, setup a physics manager class that 
+// can be initialized with a choice of integrator (RK4, RK4 Adaptive, Verlet, RK2, etc)
+// and provides generic functions for the main simulation to call.
+
+
+//As far as I understand,
+//RK4 will require an acceleration function, something which returns the acceleration of
+// of a particle slightly into the future, given its position, velocity and a time delta 
+// i.e. it wants the accn at t = t + dt. Obviously, impossible to do since accn in the 
+// future depends on positions of other particles in the future. To calculate those would require 
+// using RK4 itself, which leads to problems.
+// So I cheat by assuming that in dt time the other particles haven't really moved.
+// Yeah, its a hack. Sue me.
+// --arciel
+Vector2D rk4_accl(Vector2D r, Vector2D v, float dt, int id, float q)
+{
+	VParticle vpf(id, q, r, v);
+	vpf.setR(vpf.getR() + vpf.getV()*dt); // x = x0 + vdt
+
+	Vector2D netE(0, 0);
+	for (auto &it : List)
+	{
+		if (it->getID() == vpf.getID()) continue;
+		netE = netE + (vpf.getR() - it->getR()) * (it->getQ() / vpf.getR().distance2(it->getR()));
+	}
+	Vector2D f = netE * vpf.getQ();
+	return f; //mass = 1 => acc = force
+
+}
+
+void rk4_integrate()
+{
+	for (auto &vp : List) //mad cpp11 features! Loop over every particle in the simulation...
+	{
+		if (vp->getFixed() == 1) continue; //this charge is fixed in space.
+		
+
+		/*
+		Vector2D netE(0, 0);
+
+		for (auto it : List)
+		{
+			if (it->getID() == vp->getID()) continue; //Do not include ourselves for net E-field calculations.
+			netE = netE + (vp->getR() - it->getR()) * (it->getQ() / vp->getR().distance2(it->getR())); 
+		}
+		vp->setF(netE * vp->getQ()); // F = qE. We have the force.
+		*/
+
+		//Now, use this force to obtain the acceleration and use RK4 to obtain the velocity and positions.
+
+		Vector2D r1 = vp->getR();
+		Vector2D v1 = vp->getV();
+		Vector2D a1 = rk4_accl(r1, v1, delta, vp->getID(), vp->getQ());
+
+		Vector2D r2 = r1 + v1*(float)(0.5*delta);
+		Vector2D v2 = v1 + a1*(float)(0.5*delta);
+		Vector2D a2 = rk4_accl(r2, v2, delta / 2, vp->getID(),vp->getQ());
+		
+		Vector2D r3 = r1 + v2*(float)(0.5*delta);
+		Vector2D v3 = v1 + a2*(float)(0.5*delta);
+		Vector2D a3 = rk4_accl(r3, v3, delta / 2, vp->getID(), vp->getQ());
+
+		Vector2D r4 = r1 + v3*(float)delta;
+		Vector2D v4 = v1 + a3*(float)delta;
+		Vector2D a4 = rk4_accl(r4, v4, delta, vp->getID(), vp->getQ());
+
+		Vector2D rf = r1 + (v1 + v2*2.0f + v3*2.0f + v4)*(float)(delta / 6.0f);
+		Vector2D vf = v1 + (a1 + a2*2.0f + a3*2.0f + a4)*(float)(delta / 6.0f);
+
+		vp->setR_(rf);
+		vp->setV_(vf);
+	}
+	//Once the simulation has updated for every particle,
+	//Update R_ -> R and V_ -> V
+
+	for (auto &update : List)
+	{
+		update->setR(update->getR_());
+		update->setV(update->getV_());
+	}
+	// And it is done.
+	// I have achieved nirvana.
 }
