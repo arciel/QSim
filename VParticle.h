@@ -25,58 +25,76 @@ public:
 		this->q = charge;
 		this->fixed = fixed;
 	}
-	int getID() {
+	int getID() 
+	{
 		return this->id;
 	}
-	float getQ() {
+	float getQ() 
+	{
 		return this->q;
 	}
-	Vector2D getR() {
+	Vector2D getR() 
+	{
 		return this->r;
 	}
-	Vector2D getR_() {
+	Vector2D getR_()
+	{
 		return this->r_;
 	}
-	Vector2D getR_t() {
+	Vector2D getR_t() 
+	{
 		return this->r_t;
 	}
-	Vector2D getV() {
+	Vector2D getV() 
+	{
 		return this->v;
 	}
-	Vector2D getV_() {
+	Vector2D getV_() 
+	{
 		return this->v_;
 	}
-	Vector2D getF() {
+	Vector2D getF() 
+	{
 		return this->f;
 	}
-	int getFixed() {
+	int getFixed()
+	{
 		return this->fixed;
 	}
-	void setID(int ID) {
+	void setID(int ID)
+	{
 		this->id = ID;
 	}
-	void setQ(float charge) {
+	void setQ(float charge)
+	{
 		this->q = charge;
 	}
-	void setR(Vector2D R) {
+	void setR(Vector2D R)
+	{
 		this->r = R;
 	}
-	void setR_(Vector2D R_) {
+	void setR_(Vector2D R_)
+	{
 		this->r_ = R_;
 	}
-	void setR_t(Vector2D R_t) {
+	void setR_t(Vector2D R_t)
+	{
 		this->r_t = R_t;
 	}
-	void setV(Vector2D V) {
+	void setV(Vector2D V) 
+	{
 		this->v = V;
 	}
-	void setV_(Vector2D V_) {
+	void setV_(Vector2D V_) 
+	{
 		this->v_ = V_;
 	}
-	void setF(Vector2D F) {
+	void setF(Vector2D F) 
+	{
 		this->f = F;
 	}
-	int setFixed() {
+	int setFixed() 
+	{
 		return this->fixed;
 	}
 };
