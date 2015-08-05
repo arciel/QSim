@@ -88,13 +88,9 @@ public:
 		float r = ((this->x - b.x)*(this->x - b.x)) + ((this->y - b.y)*(this->y - b.y));
 		return SDL_pow(r, 0.5);
 	}
-	float squaredDistance(Vector2D &b) {
-		return ((this->x - b.x)*(this->x - b.x)) + ((this->y - b.y)*(this->y - b.y));
-	}
 	float distance2(Vector2D &b)
 	{
-		float r = ((this->x - b.x)*(this->x - b.x)) + ((this->y - b.y)*(this->y - b.y));
-		return r;
+		return ((this->x - b.x)*(this->x - b.x)) + ((this->y - b.y)*(this->y - b.y));
 	}
 };
 
