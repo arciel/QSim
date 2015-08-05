@@ -14,6 +14,7 @@
  *
  * To-do: 
  *		1. Fix bugs (if any).
+ *		2. Implement cutoff distance.
  */
 
 double time, delta;         // Current time and dt (step size).
