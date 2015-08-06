@@ -25,13 +25,12 @@ public:
 		this->q = charge;
 		this->fixed = fixed;
 	}
-	VParticle(int id, float charge, Vector2D _r, Vector2D _v) //I am ashamed.
+	VParticle(int id, float charge, Vector2D r, Vector2D v) //I am ashamed.
 	{
 		this->id = id;
 		this->q = charge;
-		this->r = _r;
-		this->v = _v;
-		
+		this->r = r;
+		this->v = v;
 	}
 	int getID() 
 	{

@@ -32,24 +32,24 @@ public:
 	{
 		this->y = y;
 	}
-  	float operator[](int a)					// SUBSCRIPT access
+  	float operator[](int a)					               // SUBSCRIPT access
 	{
 		if (a == 0)return this->x;
 		else if (a == 1)return this->y;
 		else return -1;
 	}
-	float operator*(Vector2D &b)			    // DOT multiplication
+	float operator*(Vector2D &b)			               // DOT multiplication
 	{
 		return this->x*b[0] + this->y * b[1];
 	}
-	Vector2D operator*(float c)                // SCALAR multiplication
+	Vector2D operator*(float c)                            // SCALAR multiplication
 	{
 		Vector2D r;
 		r.x = c*this->x;
 		r.y = c*this->y;
 		return r;
 	}
-	Vector2D operator*(int c)                  // SCALAR multiplication
+	Vector2D operator*(int c)                              // SCALAR multiplication
 	{
 		Vector2D r;
 		r.x = c*this->x;
@@ -85,16 +85,11 @@ public:
 	}
 	float distance(Vector2D &b)
 	{
-		float r = ((this->x - b.x)*(this->x - b.x)) + ((this->y - b.y)*(this->y - b.y));
-		return SDL_pow(r, 0.5);
-	}
-	float squaredDistance(Vector2D &b) {
-		return ((this->x - b.x)*(this->x - b.x)) + ((this->y - b.y)*(this->y - b.y));
+		return SDL_pow(((this->x - b.x)*(this->x - b.x)) + ((this->y - b.y)*(this->y - b.y)), 0.5);
 	}
 	float distance2(Vector2D &b)
 	{
-		float r = ((this->x - b.x)*(this->x - b.x)) + ((this->y - b.y)*(this->y - b.y));
-		return r;
+		return ((this->x - b.x)*(this->x - b.x)) + ((this->y - b.y)*(this->y - b.y));
 	}
 };
 

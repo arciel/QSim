@@ -4,4 +4,4 @@ Coulomb force simulator using SDL2. Very buggy, very alpha release. It's a proto
 
 Compilation requires SDL2 development headers and libraries set up.
 
-g++ VIntegrator.cpp -libSDL2
+g++ Program.cpp -libSDL2

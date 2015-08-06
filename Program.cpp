@@ -1,9 +1,8 @@
-// VIntegrator.cpp : Defines the entry point for the console application.
+// Program.cpp : Defines the entry point for the console application.
 
 #define _CRT_ARGUMENT_NO_WARNINGS
 
-#include "stdafx.h"
-
+//#include "stdafx.h"
 #include <stdio.h>
 #include <tchar.h>
 #include <iostream>
@@ -12,10 +11,10 @@
 
 /* Bug: 
  *		1. Breaks if + and - charges entered at the exact same place.
- *		2. Asymmetry observed (charge 1 gets attracted but 2 does not).
  *
  * To-do: 
  *		1. Fix bugs (if any).
+ *		2. Implement cutoff distance.
  */
 
 double time, delta;         // Current time and dt (step size).
@@ -87,10 +86,9 @@ int _tmain(int argc, _TCHAR* argv[])
 					printf("Fixed status is now %d\n", fixed);
 				}
 			}
-		}
-		//verlet_integrate();											// Physics calculations.
-		rk4_integrate();
-		SDL_SetRenderDrawColor(r, 255, 255, 255, SDL_ALPHA_OPAQUE); // Clear screen to white color.
+		}								
+		rk4_integrate();												   // Physics calculations.
+		SDL_SetRenderDrawColor(r, 255, 255, 255, SDL_ALPHA_OPAQUE);        // Clear screen to white color.
 		SDL_RenderClear(r);
 		SDL_Rect pos;
 		VParticle *p = nullptr;
@@ -112,103 +110,44 @@ int _tmain(int argc, _TCHAR* argv[])
 	return 0;
 }
 
-void verlet_integrate()
-{
-	VParticle *vp = nullptr;
-	for (int i = 0; i < List.size(); i++)							// For each particle in the simulation..
-	{
-		if (List[i] != nullptr) 
-		{
-			vp = List[i];
-			if (vp->getFixed() == 1) continue;
-			Vector2D netE(0, 0);
-			for (int j = 0; j < List.size(); j++)					// Calculate the net E field at the particle coords.
-			{ 				
-				if (List[j] != nullptr) 
-				{
-					if (vp->getID() == List[j]->getID()) continue;	// Do not include ourselves in the calculation for net E-field.
-					netE = netE + (vp->getR() - List[j]->getR()) * (List[j]->getQ() / vp->getR().distance2(List[j]->getR()));
-				}
-			}
-			vp->setF(netE * vp->getQ()); //The net force on the particle, F=qE (Doesn't this lool completely non-intimidating?).
-			// Here, the accn = force as mass = 1 and gravitational effects are not considered.
-
-			vp->setR_t((vp->getR()) * 2 - vp->getR_() + vp->getF()*((float)delta*(float)delta / SDL_abs(1/*vp->getQ()*/)));
-			/*
-			if (vp->getR_t().squaredDistance(screenCentre) >= cutOffDistance*cutOffDistance)
-			{
-				delete List[i];
-				List[i] = nullptr;
-			}*/
-		}
-	}
-	for (int i = 0; i < List.size(); i++)
-	{
-		if (List[i] != nullptr)
-		{
-			vp = List[i];
-			if (vp->getFixed() == 1) {}
-			else 
-			{
-				vp->setR_(vp->getR());
-				vp->setR(vp->getR_t());
-			}
-		}
-	}
-}
-
-//Quick and Dirty RK4 implementation.
-//Followed GoG's blog, Wikipedia, CodeFlow and Doswa.
-//TODO : Refactor, refactor and refactor!
+// Quick and Dirty RK4 implementation.
+// Followed GoG's blog, Wikipedia, CodeFlow and Doswa.
+// TODO : Refactor, refactor and refactor!
 // Eventually, setup a physics manager class that 
 // can be initialized with a choice of integrator (RK4, RK4 Adaptive, Verlet, RK2, etc)
 // and provides generic functions for the main simulation to call.
 
 
-//As far as I understand,
-//RK4 will require an acceleration function, something which returns the acceleration of
+// As far as I understand,
+// RK4 will require an acceleration function, something which returns the acceleration of
 // of a particle slightly into the future, given its position, velocity and a time delta 
 // i.e. it wants the accn at t = t + dt. Obviously, impossible to do since accn in the 
 // future depends on positions of other particles in the future. To calculate those would require 
 // using RK4 itself, which leads to problems.
 // So I cheat by assuming that in dt time the other particles haven't really moved.
-// Yeah, its a hack. Sue me.
+// Yeah, it's a hack. Sue me.
 // --arciel
+
 Vector2D rk4_accl(Vector2D r, Vector2D v, float dt, int id, float q)
 {
 	VParticle vpf(id, q, r, v);
-	vpf.setR(vpf.getR() + vpf.getV()*dt); // x = x0 + vdt
+	vpf.setR(vpf.getR() + vpf.getV()*dt); // x = x0 + vdt.
 
-	Vector2D netE(0, 0);
+	Vector2D netE(0, 0);	// Initial electric field. 
 	for (auto &it : List)
 	{
 		if (it->getID() == vpf.getID()) continue;
-		netE = netE + (vpf.getR() - it->getR()) * (it->getQ() / vpf.getR().distance2(it->getR()));
+		netE = netE + (vpf.getR() - it->getR()) * (it->getQ() / vpf.getR().distance2(it->getR())); 
 	}
 	Vector2D f = netE * vpf.getQ();
-	return f; //mass = 1 => acc = force
-
+	return f; // mass = 1 => acc = force
 }
 
 void rk4_integrate()
 {
-	for (auto &vp : List) //mad cpp11 features! Loop over every particle in the simulation...
+	for (auto &vp : List) //mad cpp11 features! Loop over every particle in the simulation... (Isn't this an STL feature?)
 	{
 		if (vp->getFixed() == 1) continue; //this charge is fixed in space.
-		
-
-		/*
-		Vector2D netE(0, 0);
-
-		for (auto it : List)
-		{
-			if (it->getID() == vp->getID()) continue; //Do not include ourselves for net E-field calculations.
-			netE = netE + (vp->getR() - it->getR()) * (it->getQ() / vp->getR().distance2(it->getR())); 
-		}
-		vp->setF(netE * vp->getQ()); // F = qE. We have the force.
-		*/
-
-		//Now, use this force to obtain the acceleration and use RK4 to obtain the velocity and positions.
 
 		Vector2D r1 = vp->getR();
 		Vector2D v1 = vp->getV();
@@ -241,5 +180,5 @@ void rk4_integrate()
 		update->setV(update->getV_());
 	}
 	// And it is done.
-	// I have achieved nirvana.
+	// I have achieved nirvana. - arciel.
 }
