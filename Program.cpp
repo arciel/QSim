@@ -1,7 +1,5 @@
 // Program.cpp : Defines the entry point for the console application.
 
-#define _CRT_ARGUMENT_NO_WARNINGS
-
 //#include "stdafx.h"
 #include <stdio.h>
 #include <tchar.h>
