@@ -58,7 +58,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	
 	delta = 1.0 / 60.0;			// Each frame advances the time by delta amount.
 
-	//load_config_file();
+	load_config_file();
 
 
 	while (!quit)	// GUI Handling.
@@ -107,7 +107,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		for (int y = 0; y < SC_HEIGHT; y += 25)
 			SDL_RenderDrawLine(r, 0, y, SC_WIDTH, y);
 		//^^Draw a basic cartesian coordinate grid.
-
+		SDL_SetRenderDrawBlendMode(r, SDL_BLENDMODE_NONE);
 		SDL_Rect pos;
 		for (auto &it : List)
 		{
@@ -199,4 +199,35 @@ void rk4_integrate()
 		update->setR(update->getR_());
 		update->setV(update->getV_());
 	}
+}
+
+void load_config_file()
+{
+	//qsim.cfg format
+
+	/*
+	width=800
+	height=600
+	n=3
+	//p=q x y v_x v_y fixed
+	*/
+	FILE *fp;
+	fopen_s(&fp,"qsim.cfg", "r");
+	fscanf_s(fp, "width=%d\n", &SC_WIDTH);
+	fscanf_s(fp, "height=%d\n", &SC_HEIGHT);
+	int n;
+	fscanf_s(fp, "n=%d\n", &n);
+	printf("Config File:\n Width=%d\nHeight=%d\nnPart=%d\n", SC_WIDTH, SC_HEIGHT, n);
+	float q, x, y, vx, vy;
+	int fixed;
+	VParticle *vp = nullptr;
+	for (int i = 0; i < n; i++)
+	{
+		fscanf_s(fp, "p=%f %f %f %f %f %d\n", &q, &x, &y, &vx, &vy, &fixed);
+		printf("Loaded Particle : %f %f %f %f %f %d\n", q, x, y, vx, vy, fixed);
+		vp = new VParticle(List.size(), x, y, x, y, q, fixed);
+		vp->setV({ vx, vy });
+		List.push_back(vp);
+	}
+	fclose(fp);
 }
