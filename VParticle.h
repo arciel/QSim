@@ -32,6 +32,7 @@ public:
 		this->r = r;
 		this->v = v;
 	}
+	~VParticle() { }
 	int getID() 
 	{
 		return this->id;
