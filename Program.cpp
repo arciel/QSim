@@ -1,22 +1,18 @@
 // Program.cpp : Defines the entry point for the console application.
 
-<<<<<<< HEAD
-//#include "stdafx.h"
-=======
->>>>>>> upstream/master
-
 #include <stdio.h>
 #include <tchar.h>
 #include <iostream>
+#include <fstream>
 #include <SDL.h>
 
 #include "VParticle.h"
 #include <vector>
-
+#include <string>
+#include <sstream>
 
 #pragma comment(lib,"SDL2main.lib")
 #pragma comment(lib,"SDL2.lib")
-
 
 /* Bugs: 
  *		1. Breaks if + and - charges entered at the exact same place.
@@ -38,7 +34,6 @@ float nx_q;	  // Charge and ...
 int nx_s;	  // ... sign of next particle to be added.
 int fixed;	  // Whether or not the charge is fixed in place.
 
-
 std::vector<VParticle *> List;        
 
 void rk4_integrate();
@@ -46,10 +41,9 @@ void load_config_file();
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-
 	nx_q = 1.0;
 	nx_s = 1;
-	puts("Init SDL...\n");
+	std::cout << "Init SDL...\n";
 	SDL_Window *w = nullptr;
 	SDL_Renderer *r = nullptr;
 
@@ -63,7 +57,6 @@ int _tmain(int argc, _TCHAR* argv[])
 	delta = 1.0 / 60.0;			// Each frame advances the time by delta amount.
 
 	load_config_file();
-
 
 	while (!quit)	// GUI Handling.
 	{
@@ -195,8 +188,6 @@ void rk4_integrate()
 		vp->setR_(rf);
 		vp->setV_(vf);
 	}
-	//Once the simulation has updated for every particle,
-	//Update R_ -> R and V_ -> V
 
 	for (auto &update : List)
 	{
@@ -207,31 +198,47 @@ void rk4_integrate()
 
 void load_config_file()
 {
-	//qsim.cfg format
-
-	/*
-	width=800
-	height=600
-	n=3
-	//p=q x y v_x v_y fixed
+	/*  qsim.cfg format
+	*	width=800
+	*	height=600
+	*	n=3
+	*	p=q x y v_x v_y fixed
 	*/
-	FILE *fp;
-	fopen_s(&fp,"qsim.cfg", "r");
-	fscanf_s(fp, "width=%d\n", &SC_WIDTH);
-	fscanf_s(fp, "height=%d\n", &SC_HEIGHT);
+	std::fstream f;
+	f.open("qsim.cfg");
+	std::string line;
 	int n;
-	fscanf_s(fp, "n=%d\n", &n);
-	printf("Config File:\n Width=%d\nHeight=%d\nnPart=%d\n", SC_WIDTH, SC_HEIGHT, n);
-	float q, x, y, vx, vy;
-	int fixed;
-	VParticle *vp = nullptr;
-	for (int i = 0; i < n; i++)
-	{
-		fscanf_s(fp, "p=%f %f %f %f %f %d\n", &q, &x, &y, &vx, &vy, &fixed);
-		printf("Loaded Particle : %f %f %f %f %f %d\n", q, x, y, vx, vy, fixed);
-		vp = new VParticle(List.size(), x, y, x, y, q, fixed);
-		vp->setV({ vx, vy });
-		List.push_back(vp);
+	while (getline(f, line, '\n')) {
+		int found = line.find("width=");
+		if (found != std::string::npos) {
+			SC_WIDTH = atoi(line.substr(found + 6).c_str());
+			continue;
+		}
+		found = line.find("height=");
+		if (found != std::string::npos) {
+			SC_HEIGHT = atoi(line.substr(found + 7).c_str());
+			continue;
+		}
+		found = line.find("n=");
+		if (found != std::string::npos) {
+			n = atoi(line.substr(found + 2).c_str());
+			std::stringstream ss;
+			float q, x, y, v_x, v_y;
+			int fixed;
+			for (int i = 0; i < n; i++) {
+				VParticle *vp = nullptr;
+				getline(f, line, '\n');
+				found = line.find("p=");
+				ss << line.substr(found + 2);
+				ss >> q >> x >> y >> v_x >> v_y >> fixed;
+				vp = new VParticle(List.size(), x, y, x, y, q, fixed);
+				vp->setV({ v_x, v_y });
+				List.push_back(vp);
+				ss.str("");
+				ss.clear();
+			}
+			break;
+		}
 	}
-	fclose(fp);
+	f.close();
 }
