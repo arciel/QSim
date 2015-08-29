@@ -208,24 +208,29 @@ void load_config_file()
 	f.open("qsim.cfg");
 	std::string line;
 	int n;
-	while (getline(f, line, '\n')) {
+	while (getline(f, line, '\n')) 
+	{
 		int found = line.find("width=");
-		if (found != std::string::npos) {
+		if (found != std::string::npos) 
+		{
 			SC_WIDTH = atoi(line.substr(found + 6).c_str());
 			continue;
 		}
 		found = line.find("height=");
-		if (found != std::string::npos) {
+		if (found != std::string::npos) 
+		{
 			SC_HEIGHT = atoi(line.substr(found + 7).c_str());
 			continue;
 		}
 		found = line.find("n=");
-		if (found != std::string::npos) {
+		if (found != std::string::npos) 
+		{
 			n = atoi(line.substr(found + 2).c_str());
 			std::stringstream ss;
 			float q, x, y, v_x, v_y;
 			int fixed;
-			for (int i = 0; i < n; i++) {
+			for (int i = 0; i < n; i++) 
+			{
 				VParticle *vp = nullptr;
 				getline(f, line, '\n');
 				found = line.find("p=");
