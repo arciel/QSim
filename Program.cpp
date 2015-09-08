@@ -4,12 +4,17 @@
 #include <tchar.h>
 #include <iostream>
 #include <fstream>
-#include <SDL.h>
-
-#include "VParticle.h"
 #include <vector>
 #include <string>
 #include <sstream>
+
+#include <SDL.h>
+
+#include "VParticle.h"
+#include "Vector2D.h"
+#include "Physics.cpp"
+
+
 
 #pragma comment(lib,"SDL2main.lib")
 #pragma comment(lib,"SDL2.lib")
@@ -29,14 +34,12 @@
 int SC_WIDTH = 800;
 int SC_HEIGHT = 600;
 
-double delta; // Current time and dt (step size).
 float nx_q;	  // Charge and ...
 int nx_s;	  // ... sign of next particle to be added.
 int fixed;	  // Whether or not the charge is fixed in place.
 
 std::vector<VParticle *> List;        
 
-void rk4_integrate();
 void load_config_file();
 
 int _tmain(int argc, _TCHAR* argv[])
@@ -54,9 +57,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	bool quit = false;
 	
-	delta = 1.0 / 60.0;			// Each frame advances the time by delta amount.
-
 	load_config_file();
+
+	PhysMan<1> p;
 
 	while (!quit)	// GUI Handling.
 	{
@@ -93,7 +96,7 @@ int _tmain(int argc, _TCHAR* argv[])
 				}
 			}
 		}								
-		rk4_integrate();												   // Physics calculations.
+		p.integrate(List);									   // Physics calculations.
 		SDL_SetRenderDrawColor(r, 255, 255, 255, SDL_ALPHA_OPAQUE);        // Clear screen to white color.
 		SDL_RenderClear(r);
 		
@@ -127,74 +130,6 @@ int _tmain(int argc, _TCHAR* argv[])
 	return 0;
 }
 
-// Quick and Dirty RK4 implementation.
-// Followed GoG's blog, Wikipedia, CodeFlow and Doswa.
-// TODO : Refactor, refactor and refactor!
-// Eventually, setup a physics manager class that 
-// can be initialized with a choice of integrator (RK4, RK4 Adaptive, Verlet, RK2, etc)
-// and provides generic functions for the main simulation to call.
-
-
-// As far as I understand,
-// RK4 will require an acceleration function, something which returns the acceleration of
-// of a particle slightly into the future, given its position, velocity and a time delta 
-// i.e. it wants the accn at t = t + dt. Obviously, impossible to do since accn in the 
-// future depends on positions of other particles in the future. To calculate those would require 
-// using RK4 itself, which leads to problems.
-// So I cheat by assuming that in dt time the other particles haven't really moved.
-// Yeah, it's a hack. Sue me.
-// --arciel
-
-Vector2D rk4_accl(Vector2D r, Vector2D v, float dt, int id, float q)
-{
-	VParticle vpf(id, q, r, v);
-	vpf.setR(vpf.getR() + vpf.getV()*dt); // x = x0 + vdt.
-
-	Vector2D netE(0, 0);	// Initial electric field. 
-	for (auto &it : List)
-	{
-		if (it->getID() == vpf.getID()) continue;
-		netE = netE + (vpf.getR() - it->getR()) * (it->getQ() / vpf.getR().distance2(it->getR())); 
-	}
-	Vector2D f = netE * vpf.getQ();
-	return f; // mass = 1 => acc = force
-}
-
-void rk4_integrate()
-{
-	for (auto &vp : List) //mad cpp11 features! Loop over every particle in the simulation...
-	{
-		if (vp->getFixed() == 1) continue; //this charge is fixed in space.
-
-		Vector2D r1 = vp->getR();
-		Vector2D v1 = vp->getV();
-		Vector2D a1 = rk4_accl(r1, v1, delta, vp->getID(), vp->getQ());
-
-		Vector2D r2 = r1 + v1*(float)(0.5*delta);
-		Vector2D v2 = v1 + a1*(float)(0.5*delta);
-		Vector2D a2 = rk4_accl(r2, v2, delta / 2, vp->getID(),vp->getQ());
-		
-		Vector2D r3 = r1 + v2*(float)(0.5*delta);
-		Vector2D v3 = v1 + a2*(float)(0.5*delta);
-		Vector2D a3 = rk4_accl(r3, v3, delta / 2, vp->getID(), vp->getQ());
-
-		Vector2D r4 = r1 + v3*(float)delta;
-		Vector2D v4 = v1 + a3*(float)delta;
-		Vector2D a4 = rk4_accl(r4, v4, delta, vp->getID(), vp->getQ());
-
-		Vector2D rf = r1 + (v1 + v2*2.0f + v3*2.0f + v4)*(float)(delta / 6.0f);
-		Vector2D vf = v1 + (a1 + a2*2.0f + a3*2.0f + a4)*(float)(delta / 6.0f);
-
-		vp->setR_(rf);
-		vp->setV_(vf);
-	}
-
-	for (auto &update : List)
-	{
-		update->setR(update->getR_());
-		update->setV(update->getV_());
-	}
-}
 
 void load_config_file()
 {
